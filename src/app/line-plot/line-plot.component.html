@@ -1,0 +1,11 @@
+<p>line-plot works!</p>
+<button type="button" (click)="onClick()">Set/Color 1</button>
+<button type="button" (click)="onClick3()">Reset</button>
+<div class="chart">
+    <canvas baseChart
+    [data]="lineChartData"
+    [type]="lineChartType"
+    [options]="lineChartOptions">
+
+    </canvas>
+</div>
