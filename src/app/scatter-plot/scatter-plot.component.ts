@@ -17,7 +17,8 @@ export class ScatterPlotComponent implements OnInit {
 
   constructor() { }
 
-  dataSet = rawData;
+  xAxisLength: number = 8000
+  standardDataSet: DataPoint[] = this.prepareData(rawData);
 
   ngOnInit(): void {
   }
@@ -26,7 +27,7 @@ export class ScatterPlotComponent implements OnInit {
   public scatterChartData: ChartData<'scatter'> = {
     datasets: [
       {
-        data: prepareData(this.dataSet),  //implementation under class
+        data: this.standardDataSet,  //implementation under class
         label:'',
         pointStyle:'line',
         pointRadius:4,
@@ -39,14 +40,18 @@ export class ScatterPlotComponent implements OnInit {
 
   public scatterChartOptions: ChartConfiguration['options'] = {
     // We use these empty structures as placeholders for dynamic theming.
+    animation:false,
     scales: {
       x: {
+        min:0,
+        max: this.xAxisLength,
         grid: {
           color: "rgba(0, 0, 0, 0)",
         }
       },
       y: {
         min: 0,
+        max: 1000
       }
     },
     plugins: {
@@ -56,10 +61,12 @@ export class ScatterPlotComponent implements OnInit {
     },
   }
 
-}
+prepareData (rawData: DataPoint[]) {    // automatisiert erstellung nullpunkte direkt vor und nach jedem Datenpunkt im eingereichten Array
+  var preparedData: DataPoint[] = []    // nullpunkte nötig um linie von x-Achse zu Datenpunkt und wieder zurück ziehen zu können
+  if(rawData[0].x!==0){
+  preparedData.push({x:0,y:0})          //push startpunkt bei 0 falls dort kein Wert vorhanden ist
+  }         
 
-function prepareData (rawData: DataPoint[]) {    // automatisiert erstellung nullpunkte direkt vor und nach jedem Datenpunkt im eingereichten Array
-  var preparedData: DataPoint[] = []
   for(let i in rawData){
     preparedData.push({
       x: (rawData[i].x-0.01),
@@ -77,7 +84,50 @@ function prepareData (rawData: DataPoint[]) {    // automatisiert erstellung nul
         y: 0
       })
   }
+  preparedData.push({x: this.xAxisLength, y:0})  // push endpunkt -> schwarze Linie durchgängig auf xAchse vorhanden
 
   return preparedData
+}
+
+onClick() {
+  var preparedData: DataPoint[] = []
+  if(rawData[0].x!==0){
+    preparedData.push({x:0,y:0})          //push startpunkt bei 0 falls dort kein Wert vorhanden ist
+    } 
+
+
+  for(let i in rawData){
+    if((rawData[i].x)==12 || (rawData[i].x)==432 || (rawData[i].x)==6666){
+    preparedData.push({
+      x: (rawData[i].x-0.01),
+      y: 0
+      })
+
+      preparedData.push({
+        x: rawData[i].x,
+        y: rawData[i].y
+        }
+      )
+
+      preparedData.push({
+        x: (rawData[i].x+0.01),
+        y: 0
+      })
+    }
+  }
+  preparedData.push({x: this.xAxisLength, y:0})  // push endpunkt -> schwarze Linie durchgängig auf xAchse vorhanden
+
+  this.scatterChartData.datasets[0].data=preparedData
+  this.scatterChartData.datasets[0].borderColor='#c05851';
+  this.chart?.update()
+}
+
+resetChart(){
+  var preparedData = this.prepareData(rawData)
+  this.scatterChartData.datasets[0].data=preparedData
+  this.scatterChartData.datasets[0].borderColor='#000000'
+  this.chart?.update()
+}
+
 }
 
